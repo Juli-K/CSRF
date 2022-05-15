@@ -1,22 +1,3 @@
-/*
- * Zed Attack Proxy (ZAP) and its related class files.
- *
- * ZAP is an HTTP/HTTPS proxy for assessing web application security.
- *
- * Copyright 2012 The ZAP Development Team
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.zaproxy.zap.extension.pscanrules;
 
 import java.util.ArrayList;
@@ -44,15 +25,10 @@ import org.zaproxy.zap.extension.ruleconfig.RuleConfigParam;
 import org.zaproxy.zap.model.Vulnerabilities;
 import org.zaproxy.zap.model.Vulnerability;
 
-/**
- * The CsrfCountermeasuresScanRule identifies *potential* vulnerabilities with the lack of known
- * CSRF countermeasures in pages with forms.
- *
- * @author 70pointer
- */
+
 public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
 
-    /** contains the base vulnerability that this plugin refers to */
+    
     private static Vulnerability vuln = Vulnerabilities.getVulnerability("wasc_9");
 
     private static final Map<String, String> ALERT_TAGS =
@@ -69,11 +45,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
     /** the logger */
     private static Logger logger = LogManager.getLogger(CsrfCountermeasuresScanRule.class);
 
-    /**
-     * gets the plugin id for this extension
-     *
-     * @return the plugin id for this extension
-     */
+ 
     @Override
     public int getPluginId() {
         return 10202;
@@ -89,8 +61,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
             return; // At HIGH threshold return if the msg isn't in scope
         }
 
-        // need to do this if we are to be able to get an element's parent. Do it as early as
-        // possible in the logic
+       
         source.fullSequentialParse();
 
         long start = System.currentTimeMillis();
@@ -132,20 +103,15 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
                 StringBuilder sbForm = new StringBuilder();
                 SortedSet<String> elementNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
                 ++numberOfFormsPassed;
-                // if the form has no parent, it is pretty likely invalid HTML (or Javascript!!!),
-                // so we will not report
-                // any alerts on it.
-                // ie. This logic is necessary to eliminate false positives on non-HTML files.
                 if (formElement.getParentElement() == null) {
                     logger.debug(
                             "Skipping HTML form because it has no parent. Likely not actually HTML.");
-                    continue; // do not report a missing anti-CSRF field on this form
+                    continue; 
                 }
                 if (formOnIgnoreList(formElement, ignoreList)) {
                     continue;
                 }
                 if (!StringUtils.isEmpty(ignoreAttName)) {
-                    // Check to see if the specific security annotation is present
                     Attribute att = formElement.getAttributes().get(ignoreAttName);
                     if (att != null) {
                         if (StringUtils.isEmpty(ignoreAttValue)
@@ -160,27 +126,27 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
                 boolean foundCsrfToken = false;
 
                 if (inputElements != null && inputElements.size() > 0) {
-                    // Loop through all of the INPUT elements
                     logger.debug("Found {} inputs", inputElements.size());
                     for (Element inputElement : inputElements) {
                         String attId = inputElement.getAttributeValue("ID");
                         if (attId != null) {
                             elementNames.add(attId);
                             for (String tokenName : tokenNames) {
-                                if (tokenName.equalsIgnoreCase(attId)) {
+                                if (attId.toLowerCase().contains(tokenName.toLowerCase())) {
                                     foundCsrfToken = true;
                                     break;
                                 }
                             }
                         }
                         String name = inputElement.getAttributeValue("NAME");
+                       
                         if (name != null) {
                             if (attId == null) {
-                                // Dont bother recording both
                                 elementNames.add(name);
                             }
                             for (String tokenName : tokenNames) {
-                                if (tokenName.equalsIgnoreCase(name)) {
+                                
+                                if (name.toLowerCase().contains(tokenName.toLowerCase())) {
                                     foundCsrfToken = true;
                                     break;
                                 }
@@ -194,8 +160,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
 
                 String evidence = "";
                 evidence = formElement.getFirstElement().getStartTag().toString();
-
-                // Append the form names with double quotes
+                
                 sbForm.append(String.join("\" \"", elementNames));
                 sbForm.append("\" ]");
 
@@ -249,8 +214,6 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
 
     @Override
     public String getName() {
-        // do not use the name of the related vulnerability
-        // (because we have not actually discovered an instance of this vulnerability class!)
         return Constant.messages.getString("pscanrules.noanticsrftokens.name");
     }
 
@@ -288,7 +251,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
     }
 
     public int getCweId() {
-        return 352; // CWE-352: Cross-Site Request Forgery (CSRF)
+        return 352; 
     }
 
     public int getWascId() {
