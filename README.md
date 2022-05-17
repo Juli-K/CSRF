@@ -1,2 +1,1 @@
 # CSRF
-Generator CSRF Poc
